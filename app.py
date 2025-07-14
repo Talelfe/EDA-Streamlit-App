@@ -58,11 +58,25 @@ show_vehicle_types_by_manufacturer = st.checkbox(
 if show_vehicle_types_by_manufacturer:  # Si la casilla está marcada
     st.write(
         'Creación de un gráfico de barras apiladas de tipos de vehículos por fabricante:')
-    fig_bar = px.histogram(car_data, x="manufacturer", color="type",
-                           title="Tipos de Vehículos por Fabricante",
-                           barmode="stack")  # barmode="stack" para barras apiladas
-    st.plotly_chart(fig_bar, use_container_width=True)
-    st.success('Gráfico de tipos de vehículos por fabricante creado con éxito!')
+
+    # Verificar si las columnas 'manufacturer' y 'type' existen
+    if 'manufacturer' in car_data.columns and 'type' in car_data.columns:
+        # Eliminar filas con valores NaN en 'manufacturer' o 'type' para asegurar el gráfico
+        # Esto es importante para evitar errores si Plotly no puede manejar NaNs en estas columnas
+        filtered_car_data = car_data.dropna(subset=['manufacturer', 'type'])
+
+        if not filtered_car_data.empty:
+            fig_bar = px.histogram(filtered_car_data, x="manufacturer", color="type",
+                                   title="Tipos de Vehículos por Fabricante",
+                                   barmode="stack")  # barmode="stack" para barras apiladas
+            st.plotly_chart(fig_bar, use_container_width=True)
+            st.success(
+                'Gráfico de tipos de vehículos por fabricante creado con éxito!')
+        else:
+            st.warning(
+                "No hay datos válidos (sin valores nulos en fabricante o tipo) para crear el gráfico de tipos de vehículos por fabricante.")
+    else:
+        st.error("Las columnas 'manufacturer' o 'type' no se encontraron en el dataset. Por favor, verifica los nombres de las columnas.")
 
 # Casilla de verificación para el histograma de condición vs año del modelo
 show_condition_vs_year_histogram = st.checkbox(
@@ -77,50 +91,63 @@ if show_condition_vs_year_histogram:  # Si la casilla está marcada
     st.plotly_chart(fig_condition_year, use_container_width=True)
     st.success('Histograma de condición vs año del modelo creado con éxito!')
 
-# Nueva sección para comparar la distribución de precios entre fabricantes
-st.subheader('Comparar Distribución de Precios entre Fabricantes')
+# Nueva casilla de verificación para la sección de comparación de precios
+show_price_comparison = st.checkbox(
+    'Mostrar Comparación de Distribución de Precios entre Fabricantes')
 
-# Obtener la lista única de fabricantes para los selectores
-manufacturer_list = sorted(car_data['manufacturer'].dropna().unique())
+if show_price_comparison:  # Si la casilla de comparación de precios está marcada
+    st.subheader('Comparar Distribución de Precios entre Fabricantes')
 
-# Selectores para elegir los fabricantes
-selected_manufacturer_1 = st.selectbox(
-    'Selecciona el fabricante 1:',
-    options=manufacturer_list,
-    index=manufacturer_list.index(
-        'chevrolet') if 'chevrolet' in manufacturer_list else 0
-)
+    # Obtener la lista única de fabricantes para los selectores
+    # Se añade una verificación de columna antes de intentar acceder a ella
+    if 'manufacturer' in car_data.columns:
+        manufacturer_list = sorted(car_data['manufacturer'].dropna().unique())
+    else:
+        manufacturer_list = []
+        st.error("La columna 'manufacturer' no se encontró en el dataset. No se pueden mostrar los selectores de fabricantes.")
 
-selected_manufacturer_2 = st.selectbox(
-    'Selecciona el fabricante 2:',
-    options=manufacturer_list,
-    index=manufacturer_list.index('bmw') if 'bmw' in manufacturer_list else 1
-)
+    if manufacturer_list:  # Solo mostrar selectores si hay fabricantes disponibles
+        # Selectores para elegir los fabricantes
+        selected_manufacturer_1 = st.selectbox(
+            'Selecciona el fabricante 1:',
+            options=manufacturer_list,
+            index=manufacturer_list.index(
+                'chevrolet') if 'chevrolet' in manufacturer_list else 0
+        )
 
-# Casilla de verificación para normalizar el histograma
-normalize_histogram = st.checkbox('Normalizar Histograma')
+        selected_manufacturer_2 = st.selectbox(
+            'Selecciona el fabricante 2:',
+            options=manufacturer_list,
+            index=manufacturer_list.index('bmw') if 'bmw' in manufacturer_list else (
+                1 if len(manufacturer_list) > 1 else 0)
+        )
 
-# Filtrar los datos para los fabricantes seleccionados
-filtered_data_compare = car_data[
-    (car_data['manufacturer'] == selected_manufacturer_1) |
-    (car_data['manufacturer'] == selected_manufacturer_2)
-]
+        # Casilla de verificación para normalizar el histograma
+        normalize_histogram = st.checkbox('Normalizar Histograma')
 
-# Crear el histograma de comparación
-if not filtered_data_compare.empty:
-    # Determinar si se debe normalizar
-    hist_norm_mode = 'percent' if normalize_histogram else None
+        # Filtrar los datos para los fabricantes seleccionados
+        filtered_data_compare = car_data[
+            (car_data['manufacturer'] == selected_manufacturer_1) |
+            (car_data['manufacturer'] == selected_manufacturer_2)
+        ]
 
-    fig_compare_price = px.histogram(
-        filtered_data_compare,
-        x="price",
-        color="manufacturer",
-        title=f"Distribución de Precios: {selected_manufacturer_1} vs {selected_manufacturer_2}",
-        barmode="overlay",  # Para superponer los histogramas
-        histnorm=hist_norm_mode  # Normaliza a porcentaje si la casilla está marcada
-    )
-    st.plotly_chart(fig_compare_price, use_container_width=True)
-    st.success('Gráfico de comparación de precios creado con éxito!')
-else:
-    st.warning(
-        "No hay datos disponibles para la combinación de fabricantes seleccionada.")
+        # Crear el histograma de comparación
+        if not filtered_data_compare.empty:
+            # Determinar si se debe normalizar
+            hist_norm_mode = 'percent' if normalize_histogram else None
+
+            fig_compare_price = px.histogram(
+                filtered_data_compare,
+                x="price",
+                color="manufacturer",
+                title=f"Distribución de Precios: {selected_manufacturer_1} vs {selected_manufacturer_2}",
+                barmode="overlay",  # Para superponer los histogramas
+                histnorm=hist_norm_mode  # Normaliza a porcentaje si la casilla está marcada
+            )
+            st.plotly_chart(fig_compare_price, use_container_width=True)
+            st.success('Gráfico de comparación de precios creado con éxito!')
+        else:
+            st.warning(
+                "No hay datos disponibles para la combinación de fabricantes seleccionada.")
+    else:
+        st.warning("No se puede comparar la distribución de precios porque la lista de fabricantes está vacía o la columna 'manufacturer' no existe.")
