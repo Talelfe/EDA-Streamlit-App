@@ -1,6 +1,9 @@
 # EDA-Streamlit-App 🚗📊✨
 Un proyecto de Análisis Exploratorio de Datos (EDA) que utiliza pandas para la manipulación de datos, plotly-express para visualizaciones interactivas y Streamlit para la implementación de una aplicación web interactiva.
 
+### 🔗 **Link de la App**
+Puedes acceder a la aplicación web desplegada aquí: https://anuncios-de-venta-de-coches-app.onrender.com 🌐
+
 ### 📝 **Descripción del Proyecto:**
 Este proyecto tiene como objetivo realizar un análisis exploratorio de un conjunto de datos de anuncios de venta de coches (vehicles_us.csv). La aplicación web desarrollada con Streamlit permite a los usuarios visualizar la distribución de características clave (como el odómetro) mediante histogramas y explorar relaciones entre variables (como odómetro y precio) a través de gráficos de dispersión. Los gráficos se generan de forma interactiva utilizando Plotly Express.
 
