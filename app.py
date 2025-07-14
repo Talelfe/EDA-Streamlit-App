@@ -3,7 +3,8 @@ import streamlit as st
 import plotly.express as px
 
 # importar los datos desde el archivo CSV
-car_data = pd.read_csv('notebooks/vehicles_us.csv')
+car_data = pd.read_csv('vehicles_us.csv')
+
 # solo para verificar que los datos se cargaron correctamente
 print(car_data.info())
 
@@ -40,3 +41,6 @@ if show_scatter:  # Si la casilla del gráfico de dispersión está marcada
     st.plotly_chart(fig_scatter, use_container_width=True)
     # mostrar un mensaje de éxito
     st.success('Gráfico de dispersión creado con éxito!')
+
+# Mostrar un mensaje de finalización
+st.write('Análisis Exploratorio de Datos (EDA) completado con éxito!')
